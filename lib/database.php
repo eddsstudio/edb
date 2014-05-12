@@ -1,14 +1,14 @@
 <?php
 /**
    * EDB Class -- Easy Database Class
-   * @version 0.1.3
+   * @version 0.2
    * @author Eduards Marhelis <eduards.marhelis@gmail.com>
-   * @link http://code.google.com/p/edb-php-class/
+   * @link https://github.com/eddsstudio/edb
    * @copyright Copyright 2010 Eduards Marhelis
    * @license http://www.opensource.org/licenses/mit-license.php MIT License
    * @package EDB Class
    */
-class edb{
+class database{
 	private	$connection		=	false;
 	public	$debug			=	false; //debuging all
 	public	$res			=	0; //last result data
