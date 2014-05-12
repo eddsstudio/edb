@@ -19,29 +19,73 @@ class database{
 	public	$queryTime		= 	0; //total query time
 	public	$cacheDir		=	'./dbcache/';
 	public	$utf8Cache		=	false; //use only when you have 
-
+	private static $instance;
+	protected $config;
+	private static $database_config;
+	private static $default_database;
 	
 	/**
 	   * @function 			__Construct 
-	   * @description 		Connects to database when created new edb(); object.
+	   * @description 		Connects to database when created new database(); object.
 	   * @param string 		$host 	Database Host.
 	   * @param string 		$user 	Database user.
 	   * @param string 		$pass 	Database pass.
 	   * @param string 		$db 	Database name.
 	   * @return 			nothing.
 	   */
-	public function __construct($host, $user=0, $pass=0, $db=0){
-		$data = $host;
-		if(is_array($data)){
-			$host = $data[0];
-			$user = $data[1];
-			$pass = $data[2];
-			$db   = $data[3];
+	public function __construct($config = false,$connect = false){
+		if($config || $connect){
+			$this->connect($config);
 		}
-			$this->connection = mysql_connect($host, $user, $pass) or die(mysql_error());
-			mysql_select_db($db) or die(mysql_error());
+	}
+	
+	/**
+	   * @function 			connect 
+	   * @description 		Connects to database 
+	   * @param string 		$host 	Database Host.
+	   * @param string 		$user 	Database user.
+	   * @param string 		$pass 	Database pass.
+	   * @param string 		$db 	Database name.
+	   * @return 			nothing.
+	   */
+	function connect($config = false){
+		
+		if(!$config){
+			
+			$config = self::config();
+		}
+		
+		$this->config = $config;
+		$this->connection = new mysqli($this->config['HOST'],$this->config['USER'],$this->config['PASS'],$this->config['DBNAME']);
 		
 	}
+	
+	public static function getInstance() {
+		if(!self::$instance){
+			$config = self::config();
+			self::$instance = new self($config);
+		}
+		return self::$instance;
+	}
+	
+	public static function getCustomInstance($databaseName = false){
+	
+	}
+	
+	
+	/** get database configuration from config.php */	
+	public static function config($config_name = false){
+		if(!self::$database_config){
+			include(dirname(__FILE__).'/config.php');
+			self::$database_config = $DATABASE_CONFIG;
+			self::$default_database = $DEFAULT_DATABASE;
+		}
+		if(!$config_name){
+			return self::$database_config[self::$default_database];
+		}
+	}
+	
+	
 	/**
 	   * @function 			q  (shortening for query) 
 	   * @description 		runs mysql query and returns php array.
@@ -66,12 +110,12 @@ class database{
 		return $this->res;
 	}
 	/**
-	   * @function 			line   
-	   * @description 		runs mysql query and returns php array with line from db.
+	   * @function 			getRow   
+	   * @description 		runs mysql query and returns php array with row from db.
 	   * @param string 		$a 	Mysql Code.
 	   * @return 			array();
 	   */
-	public function line($a,$c=0,$t=30){
+	public function getRow($a,$c=0,$t=30){
 		$cacheFile = $this->cacheDir . md5($a) .'.cache';
 		if($c && is_file($cacheFile) && (time()-filemtime($cacheFile))<$t){
 			$this->line = $this->getCache($cacheFile,$a);
@@ -86,13 +130,39 @@ class database{
 		}
 		return $this->line;
 	}
+	
+	public function getRows($a,$c=0,$t=30){
+		
+		$cacheFile = $this->cacheDir . md5($a) .'.cache';
+		if($c && is_file($cacheFile) && (time()-filemtime($cacheFile))<$t){
+			$this->line = $this->getCache($cacheFile,$a);
+		}else{
+			$start	=	microtime(1);
+			
+			$return = $this->connection->query($a);
+    	
+	    	$data = array();
+	    	
+	    	while ($row = $return->fetch_assoc()) {
+			    $data[] = $row;
+			}
+			
+			$end	=	microtime(1);
+			if($c) { $this->setCache($cacheFile,$data,$a); }
+			$this->debugData($start,$end,$a);
+			
+		}
+		return $data;
+	}
+	
+	
 	/**
-	   * @function 			one   
+	   * @function 			getOne   
 	   * @description 		runs mysql query and returns php string db.
 	   * @param string 		$a 	Mysql Code.
 	   * @return 			string.
 	   */
-	public function one($a,$c=0,$t=30){
+	public function getOne($a,$c=0,$t=30){
 		$cacheFile = $this->cacheDir . md5($a) .'.cache';
 		if($c && is_file($cacheFile) && (time()-filemtime($cacheFile))<$t){
 			$this->one = $this->getCache($cacheFile,$a,false);
@@ -168,6 +238,12 @@ class database{
 		return $this->s($q.');');
 	}
 	
+	public function insert($q,$data){
+	
+		
+	
+	}
+	
 	//update row or rows, $db->update($tableName,$updateValues,$whereValues);
 	public function update($a,$b,$c){
 		$q = "UPDATE `$a` SET ";
@@ -185,12 +261,12 @@ class database{
 
 	public function countTable($a,$c=0,$t=30){
 		$q = "SELECT COUNT(*) FROM `$a` LIMIT 1";
-		return $this->one($q,$c,$t);
+		return $this->getOne($q,$c,$t);
 	}
 	
 	function countWhere($a,$b,$c=0,$t=30){
 		$q = "SELECT COUNT(*) FROM `$a` WHERE $b LIMIT 1";
-		return $this->one($q,$c,$t);
+		return $this->getOne($q,$c,$t);
 	}
 	//get last inserted ID	
 	public function lastID()
@@ -203,6 +279,9 @@ class database{
 	   */
 	public function __destruct(){
 		mysql_close($this->connection);
+		echo "<!--";
+		print_r( $this->queryAll);
+		echo "-->";
 	}
 
 }
