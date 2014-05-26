@@ -6,7 +6,7 @@ $DATABASE_CONFIG = array(
 				'HOST'	=>	'127.0.0.1',
 				'PORT'	=>	3306,
 				'USER'	=>	'root',
-				'PASS'	=>	'killersite32A',
+				'PASS'	=>	'somepassword@1',
 				'DBNAME'	=>	'tickets', 
 				'CACHE'	=>	false 
 	)
