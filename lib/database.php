@@ -121,8 +121,9 @@ class database{
 			$this->line = $this->getCache($cacheFile,$a);
 		}else{
 			$start	=	microtime(1);
-			$query = mysql_query("$a", $this->connection);
-			$this->line = mysql_fetch_array( $query );
+			
+			$query = $this->connection->query($a);
+			$this->line = $query->fetch_assoc();			
 			$end	=	microtime(1);
 			if($c) { $this->setCache($cacheFile,$this->line,$a); }
 			$this->debugData($start,$end,$a);
@@ -179,14 +180,14 @@ class database{
 		return $this->one;
 	}
 	/**
-	   * @function 			s   
+	   * @function 			s = send data
 	   * @description 		runs mysql query and returns result from mysql query. used for inserts and updates. 
 	   * @param string 		$a 	Mysql Code.
 	   * @return 			string.
 	   */
 	public function s($a){
 		$start	=	microtime(1);
-		$q = mysql_query("$a", $this->connection) or die(mysql_error());  
+		$q = $this->connection->query($a); 
 		$end	=	microtime(1);
 		$this->debugData($start,$end,$a);
 		return $q;
@@ -238,15 +239,10 @@ class database{
 		return $this->s($q.');');
 	}
 	
-	public function insert($q,$data){
-	
-		
-	
-	}
 	
 	//update row or rows, $db->update($tableName,$updateValues,$whereValues);
 	public function update($a,$b,$c){
-		$q = "UPDATE `$a` SET ";
+		$q = "UPDATE $a SET ";
 		foreach($b as $v=>$k){
 			$q .= "`$v`='$k',";
 		}
