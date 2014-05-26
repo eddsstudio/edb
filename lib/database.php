@@ -269,6 +269,11 @@ class database{
     {
       return mysql_insert_id();
     }
+    
+    static function timestamp(){
+	    return date('Y-m-d H:i:s');
+    }
+    
 	/**
 	   * @function 			__destruct   
 	   * @description 		closes mysql connection.
