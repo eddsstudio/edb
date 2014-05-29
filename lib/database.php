@@ -305,7 +305,7 @@ class database{
 	//get last inserted ID	
 	public function lastID()
     {
-      return mysql_insert_id();
+      return $this->connection->insert_id;
     }
     
     static function timestamp(){
