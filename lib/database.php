@@ -225,16 +225,18 @@ class database{
 	}
 	
 	//$db->select('database.table',['collon1','collon2'],['status'=>'yes'],50);
-	public function select($table = false,$collon = array(),$where = array(),$limit = false,$limit2=false){
+	public function select($table = false,$collon = array(),$where = array(),$limit = false,$limit2 = false){
 		
 		$q = 'SELECT ';
 		$colls = '';
 		$wheres = ' WHERE 1';
 		
-		if(isset($limit) && isset($limit2)){
+		if(($limit) && ($limit2)){
 			$limit = ' LIMIT '.$limit.', '.$limit2;
-		}else{
+		}elseif(($limit) && ((!$limit2))){
 			$limit = ' LIMIT '.$limit;
+		}else{
+			$limit = '';
 		}
 		
 		if($table){
@@ -253,9 +255,11 @@ class database{
 				}
 			}
 		}
-		$q = $q.$colls.' FROM '.$table.$wheres.$limit;
 		
-		return [$q];
+		$query = $q.$colls.' FROM '.$table.$wheres.$limit;
+		
+		return $this->getRows($query);
+		
 	}
 	
 	//insert data $db->insert($table,$data);
