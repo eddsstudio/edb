@@ -57,7 +57,7 @@ class database{
 		
 		$this->config = $config;
 		$this->connection = new mysqli($this->config['HOST'],$this->config['USER'],$this->config['PASS'],$this->config['DBNAME']);
-		
+		$this->connection->set_charset("utf8");
 	}
 	
 	public static function getInstance() {
@@ -279,10 +279,7 @@ class database{
 	   * @description 		closes mysql connection.
 	   */
 	public function __destruct(){
-		mysql_close($this->connection);
-		echo "<!--";
-		print_r( $this->queryAll);
-		echo "-->";
+		$this->connection->close();
 	}
 
 }
