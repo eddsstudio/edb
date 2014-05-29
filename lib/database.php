@@ -224,6 +224,40 @@ class database{
 		return $this->q($query,$c,$t);
 	}
 	
+	//$db->select('database.table',['collon1','collon2'],['status'=>'yes'],50);
+	public function select($table = false,$collon = array(),$where = array(),$limit = false,$limit2=false){
+		
+		$q = 'SELECT ';
+		$colls = '';
+		$wheres = ' WHERE 1';
+		
+		if(isset($limit) && isset($limit2)){
+			$limit = ' LIMIT '.$limit.', '.$limit2;
+		}else{
+			$limit = ' LIMIT '.$limit;
+		}
+		
+		if($table){
+			
+			if(is_array($collon)){
+				foreach($collon as $col){
+					$colls.= ' `'.$col.'`,';
+				}
+			}
+			
+			$colls = substr($colls,0,-1);
+			
+			if(is_array($where)){
+				foreach($where as $k=>$v){
+					$wheres.= " AND `".$k."` = '$v'  ";
+				}
+			}
+		}
+		$q = $q.$colls.' FROM '.$table.$wheres.$limit;
+		
+		return [$q];
+	}
+	
 	//insert data $db->insert($table,$data);
 	public function insert($a,$b){
 		$q = "INSERT INTO $a (";
